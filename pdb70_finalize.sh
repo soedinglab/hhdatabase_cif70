@@ -1,0 +1,100 @@
+#!/bin/bash
+
+#BSUB -q mpi
+#BSUB -W 47:50
+#BSUB -n 1
+#BSUB -a openmp
+#BSUB -o /cbscratch/hvoehri/hhdatabase_pdb70/logs/pdb70_finalize.log
+#BSUB -R "span[hosts=1]"
+#BSUB -R np16
+#BSUB -R haswell
+#BSUB -R cbscratch
+#BSUB -J pdb70_finalize
+#BSUB -m hh
+#BSUB -w "done(pdb70_hhmake) && done(pdb70_cstranslate) && done(pdb70_cstranslate_old)"
+
+source paths.sh
+source /etc/profile
+source $HOME/.bashrc
+
+module use-append $HOME/modulefiles/
+module load intel/compiler/64/15.0/2015.3.187
+module load openmpi/intel/64/1.8.5
+module load python/3.5.0
+
+
+## Copy from build to final directory
+for type in a3m hhm cs219 pdb cs219_old;
+do
+  echo "! Running ffindex_modify -u -f ${pdb70_build_dir}/todo_files.dat ${pdb70_dir}/pdb70_${type}.ffindex"
+  # Delete todo_files from old ffindices
+  ffindex_modify -u -f ${pdb70_build_dir}/todo_files.dat ${pdb70_dir}/pdb70_${type}.ffindex
+  echo "! Running ffindex_build -as -d ${pdb70_build_dir}/pdb70_${type}.ffdata -i ${pdb70_build_dir}/pdb70_${type}.ffindex ${pdb70_dir}/pdb70_${type}.ff{data,index}"
+  # Add new files
+  ffindex_build -as -d ${pdb70_build_dir}/pdb70_${type}.ffdata -i ${pdb70_build_dir}/pdb70_${type}.ffindex ${pdb70_dir}/pdb70_${type}.ff{data,index}
+  echo "! Running ffindex_build -as -d ${pdb70_dir}/pdb70_${type}.ffdata -i ${pdb70_dir}/pdb70_${type}.ffindex ${pdb70_dir}/pdb70_${type}_opt.ff{data,index}"
+  # Optimize ffindex databases
+  ffindex_build -as -d ${pdb70_dir}/pdb70_${type}.ffdata -i ${pdb70_dir}/pdb70_${type}.ffindex ${pdb70_dir}/pdb70_${type}_opt.ff{data,index}
+
+  # Overwrite unoptimized databases with optimized databases
+  mv -f ${pdb70_dir}/pdb70_${type}_opt.ffdata ${pdb70_dir}/pdb70_${type}.ffdata
+  mv -f ${pdb70_dir}/pdb70_${type}_opt.ffindex ${pdb70_dir}/pdb70_${type}.ffindex
+done
+
+echo "PART 2 of finalize"
+
+##sort hhms and a3m according to sequence length
+sort -k 3 -n ${pdb70_dir}/pdb70_cs219.ffindex | cut -f1 > ${pdb70_build_dir}/sort_by_length.dat
+for type in a3m hhm;
+do
+  ffindex_order ${pdb70_build_dir}/sort_by_length.dat ${pdb70_dir}/pdb70_${type}.ffdata ${pdb70_dir}/pdb70_${type}.ffindex ${pdb70_dir}/pdb70_${type}_opt.ffdata ${pdb70_dir}/pdb70_${type}_opt.ffindex
+
+  mv -f ${pdb70_dir}/pdb70_${type}_opt.ffdata ${pdb70_dir}/pdb70_${type}.ffdata
+  mv -f ${pdb70_dir}/pdb70_${type}_opt.ffindex ${pdb70_dir}/pdb70_${type}.ffindex
+done
+
+echo "PART 3 of finalize ffindex data manager"
+
+##update time stamps
+cut -f 1 ${pdb70_build_dir}/pdb70_a3m.ffindex > ${pdb70_build_dir}/done_files.dat
+python3 ./ffindex_date_manager.py --update -i ${pdb70_dir}/pdb70_date_index.dat -f ${pdb70_build_dir}/done_files.dat
+
+echo "PART 4 of finalize reformat_old_cs219"
+
+## Prepare old database format
+#delete old cs219 files
+rm -f ${pdb70_dir}/pdb70.cs219 ${pdb70_dir}/pdb70.cs219.sizes
+python3 ./reformat_old_cs219_ffindex.py ${pdb70_dir}/pdb70_cs219_old ${pdb70_dir}/pdb70
+
+
+#delete old indices
+rm -f ${pdb70_dir}/pdb70_{a3m_db,hhm_db,pdb}.index
+awk '{$1=$1".a3m"}1' ${pdb70_dir}/pdb70_a3m.ffindex > ${pdb70_dir}/pdb70_a3m_db.index
+sed -i "s/ /\t/g" ${pdb70_dir}/pdb70_a3m_db.index
+awk '{$1=$1".hhm"}1' ${pdb70_dir}/pdb70_hhm.ffindex > ${pdb70_dir}/pdb70_hhm_db.index
+sed -i "s/ /\t/g" ${pdb70_dir}/pdb70_hhm_db.index
+
+awk '{$1=$1".pdb"}1' ${pdb70_dir}/pdb70_pdb.ffindex > ${pdb70_dir}/pdb70_pdb.index
+
+#update links
+cd ${pdb70_dir}
+ln -sf pdb70_a3m.ffdata pdb70_a3m_db
+ln -sf pdb70_hhm.ffdata pdb70_hhm_db
+
+rm -f pdb70.tgz md5sum
+md5sum pdb70_{a3m,hhm,cs219,pdb}.ff{data,index} pdb70.cs219 pdb70.cs219.sizes pdb70_{a3m_db,hhm_db,pdb}.index > md5sum
+
+month=$(date +"%b")
+day=$(date +"%d")
+year=$(date +"%y")
+tar_name=pdb70_${day}${month}${year}.tgz
+
+tar -zcvf ${tar_name} md5sum pdb70_{a3m,hhm,cs219,pdb}.ff{data,index} pdb70.cs219 pdb70.cs219.sizes pdb70_{a3m_db,hhm_db,pdb}.index pdb70_a3m_db pdb70_hhm_db
+chmod og+r ${tar_name}
+
+#ssh compbiol@login.gwdg.de "rm -f /usr/users/compbiol/www/data/hhsuite/databases/hhsuite_dbs/pdb70*.tgz"
+#scp ${tar_name} compbiol@login.gwdg.de:/usr/users/compbiol
+#ssh compbiol@login.gwdg.de "mv /usr/users/compbiol/${tar_name} /usr/users/compbiol/www/data/hhsuite/databases/hhsuite_dbs"
+
+#rm -f ${tar_name}
+rm -f ${pdb70_lock_file}
