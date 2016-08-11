@@ -700,6 +700,7 @@ sub AppendDsspSequences() {
 		if ( $pdbfile eq "" ) { return 1; }
 		$dsspfile = $tmpfile . ".dssp";
 		# Thanks to Stefan Bienert for this patch
+		# print("Exceuting: $dssp -i $pdbfile -o $dsspfile 2> /dev/null\n");
 		&HHPaths::System("$dssp -i $pdbfile -o $dsspfile 2> /dev/null");
 
 		if ( !-e $dsspfile ) {
@@ -890,25 +891,40 @@ sub OpenPDBfile() {
 		}
 		return 1;
 	}
-	if ( -e "$pdbdir/all" ) { $pdbfile = "$pdbdir/all/"; }
+	if ( -e "$pdbdir/all" ) { 
+		$pdbfile = "$pdbdir/all/"; 
+	}
 	elsif ( -e "$pdbdir/divided" ) {
 		$pdbfile = "$pdbdir/divided/" . substr( $pdbcode, 1, 2 ) . "/";
 	}
 	else { $pdbfile = "$pdbdir/"; }
+
 	if ( $pdbdir =~ /divided.?$/ ) {
 		$pdbfile .= substr( $pdbcode, 1, 2 ) . "/";
 	}
-	if ( -e $pdbfile . "pdb$pdbcode.ent" ) { $pdbfile .= "pdb$pdbcode.ent"; }
+	
+	if ( -e $pdbfile . "pdb$pdbcode.ent" ) { 
+		$pdbfile .= "pdb$pdbcode.ent";
+	}
 	elsif ( -e $pdbfile . "pdb$pdbcode.ent.gz" ) {
 		$pdbfile .= "pdb$pdbcode.ent.gz";
 	}
 	elsif ( -e $pdbfile . "pdb$pdbcode.ent.Z" ) {
 		$pdbfile .= "pdb$pdbcode.ent.Z";
 	}
-	elsif ( -e $pdbfile . "$pdbcode.pdb" ) { $pdbfile . "$pdbcode.pdb"; }
+	elsif ( -e $pdbfile . "$pdbcode.pdb" ) { 
+		$pdbfile .= "$pdbcode.pdb"; 
+	}
+	# 11.8.2016 to make it work with cif database added this condition
+	elsif ( -e $pdbfile . "$pdbcode.cif") {  
+		$pdbfile .= "$pdbcode.cif";	# this is true when the cif file is found in unpacked in the "all" subdir
+	}
+	elsif ( -e $pdbfile . "$pdbcode.cif.gz") {
+		$pdbfile .= "$pdbcode.cif.gz"; # this is true when the cif is in the divided subdir
+	}
 	else {
 		if ( $v >= 3 ) {
-			printf( STDERR "Warning in $program: Cannot find pdb file $pdbfile"
+			printf( STDERR "Warning in $program: Cannot find cif file $pdbfile"
 				  . "pdb$pdbcode.ent!\n" );
 		}
 		return "";
