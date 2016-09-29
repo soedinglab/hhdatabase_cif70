@@ -4,20 +4,17 @@
 #BSUB -W 47:50
 #BSUB -n 16
 #BSUB -a openmp
-#BSUB -o /cbscratch/hvoehri/hhdatabase_pdb70/logs/pdb70_cstranslate_old.log
+#BSUB -o /usr/users/jsoedin/jobs/cif70_cstranslate_old.log
 #BSUB -R "span[hosts=1]"
 #BSUB -R np16
 #BSUB -R haswell
 #BSUB -R cbscratch
-#BSUB -J pdb70_cstranslate_old
+#BSUB -J cif70_cstranslate_old
 #BSUB -m hh
-#BSUB -w "done(pdb70_hhblits)"
+#BSUB -w "done(cif70_hhblits)"
 
 source paths.sh
 source $HOME/.bashrc
-
-module load intel/compiler/64/15.0/2015.3.187
-module load openmpi/intel/64/1.8.5
 
 mkdir -p /local/${USER}
 MYLOCAL=$(mktemp -d --tmpdir=/local/${USER})

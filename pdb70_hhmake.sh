@@ -4,14 +4,14 @@
 #BSUB -W 47:50
 #BSUB -n 16
 #BSUB -a openmp
-#BSUB -o /cbscratch/hvoehri/hhdatabase_pdb70/logs/pdb70_hhmake.log
+#BSUB -o /usr/users/jsoedin/jobs/cif70_hhmake.log
 #BSUB -R "span[hosts=1]"
 #BSUB -R np16
 #BSUB -R haswell
 #BSUB -R cbscratch
-#BSUB -J pdb70_hhmake
+#BSUB -J cif70_hhmake
 #BSUB -m hh
-#BSUB -w "done(pdb70_addss)"
+#BSUB -w "done(cif70_addss)"
 
 source paths.sh
 source $HOME/.bashrc

@@ -4,14 +4,14 @@
 #BSUB -W 47:50
 #BSUB -n 16
 #BSUB -a openmp
-#BSUB -o /cbscratch/hvoehri/hhdatabase_pdb70/logs/pdb70_cstranslate.log
+#BSUB -o /usr/users/jsoedin/jobs/cif70_cstranslate.log
 #BSUB -R "span[hosts=1]"
 #BSUB -R np16
 #BSUB -R haswell
 #BSUB -R cbscratch
-#BSUB -J pdb70_cstranslate
+#BSUB -J cif70_cstranslate
 #BSUB -m hh
-#BSUB -w "done(pdb70_hhblits)"
+#BSUB -w "done(cif70_hhblits)"
 
 source paths.sh
 source $HOME/.bashrc

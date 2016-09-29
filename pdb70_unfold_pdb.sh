@@ -4,11 +4,11 @@
 #BSUB -W 47:50
 #BSUB -n 1
 #BSUB -a openmp
-#BSUB -o /cbscratch/hvoehri/hhdatabase_pdb70/logs/pdb70_unfold_pdb.log
+#BSUB -o /usr/users/jsoedin/jobs/cif70_unfold_cif.log
 #BSUB -R "span[hosts=1]"
 #BSUB -R haswell
 #BSUB -R cbscratch
-#BSUB -J pdb70_unfold_pdb
+#BSUB -J cif70_unfold_cif
 
 source ./paths.sh
 source ~/.bashrc

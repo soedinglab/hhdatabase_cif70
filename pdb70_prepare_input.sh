@@ -4,54 +4,42 @@
 #BSUB -W 47:50
 #BSUB -n 16
 #BSUB -a openmp
-#BSUB -o /cbscratch/hvoehri/hhdatabase_pdb70/logs/pdb70_prepare_input.log
+#BSUB -o /usr/users/jsoedin/jobs/cif70_prepare_input.log
 #BSUB -R "span[hosts=1]"
 #BSUB -R haswell
 #BSUB -m hh
 #BSUB -R cbscratch
-#BSUB -J pdb70_prepare_input
-##BSUB -w "done(pdb70_unfold_pdb)"
+#BSUB -J cif70_prepare_input
+#BSUB -w "done(cif70_unfold_cif)"
 
 source ./paths.sh
-source /etc/profile
-source ~/.bashrc # load the pythonpath variables -> PDBX Library
+source ~/.bashrc
 
-# load all modules
-module use-append $HOME/modulefiles/
-module load python/3.5.0
-
-
-echo "pdb70_prepare_input: Removing old pdb100.fas and running cif2fasta to create an up-to-date fasta file ..."
+echo "pdb70_prepare_input: Removing old pdb100.fas and running pdb2fasta to create an up-to-date fasta file ..."
 mkdir -p ${pdb70_dir}
-rm -f ${pdb70_dir}/pdb100.fas
-${HHSCRIPTS}/cif2fasta.py -i ${pdb_dir}/all/ -o ${pdb70_dir}/pdb100.fas -p ${pdb70_dir}/pdb_filter.dat -s ${scop_file} -c 16 
-
-# Run pdbfilter.pl to create an up-to-date filtered pdb70.fas file
-
-echo "pdb70_prepare_input: Removing old pdb70.fas ..."
-rm -f ${pdb70_dir}/pdb70.fas
-
-echo "pdb70_prepare_input: Starting mmseqs to cluster sequences from pdb100.fas (-c 0.9 --min-seq-id 0.7) ..."
-mkdir /tmp/clustering # create tmp dir for clustering
-mmseqs createdb ${pdb70_dir}/pdb100.fas ${pdb70_dir}/pdb100
-mmseqs clusteringworkflow ${pdb70_dir}/pdb100 ${pdb70_dir}/pdb70_clu /tmp/clustering -c 0.9 --min-seq-id 0.7
-mmseqs createtsv ${pdb70_dir}/pdb100 ${pdb70_dir}/pdb100 ${pdb70_dir}/pdb70_clu ${pdb70_dir}/pdb70_clu.tsv
-# Clean up all the tmp files created by mmseqs
-rm -f ${pdb70_dir}/pdb100{_h,_h.index,.lookup,.index} ${pdb70_dir}/pdb100 ${pdb70_dir}/pdb70{_clu,_clu.index}
-rm -rf /tmp/clustering
-
-echo "pdb70_prepare_input: Running pdbfilter to select for each cluster the structure with the best resolution, R-free and completness ..."
-${HHSCRIPTS}/pdbfilter.py ${pdb70_dir}/pdb100.fas ${pdb70_dir}/pdb70_clu.tsv ${pdb70_dir}/pdb_filter.dat  ${pdb70_dir}/pdb70.fas -i ${pdb70_scripts}/pdb70_to_include.dat -r ${pdb70_scripts}/pdb70_to_remove.dat -v
-# Remove that temporary file
-rm -f ${pdb70_dir}/pdb_filter.dat
-
-echo "pdb70_prepare_input: Converting fasta file to ffdata, ffindex."
-rm -f ${pdb70_dir}/pdb70_fasta.ff{data,index}
-ffindex_from_fasta -s ${pdb70_dir}/pdb70_fasta.ff{data,index} ${pdb70_dir}/pdb70.fas
 
 # work in temp directory
 rm -rf ${pdb70_build_dir}
 mkdir -p ${pdb70_build_dir}
+
+rm -f ${pdb70_dir}/pdb100.fas ${pdb70_dir}/pdb_filter.dat
+python3 ${HHSCRIPTS}/pdb2fasta.py -i ${pdb_dir}/all/ -o ${pdb70_dir}/pdb100.fas -p ${pdb70_dir}/pdb_filter.dat -s ${scop_file} -c 16 
+
+echo "pdb70_prepare_input: Removing old pdb70.fas ..."
+rm -f ${pdb70_dir}/pdb70.fas ${pdb70_dir}/pdb70_clu.tsv
+
+echo "pdb70_prepare_input: Starting mmseqs to cluster sequences from pdb100.fas (-c 0.9 --min-seq-id 0.7) ..."
+mkdir -p ${pdb70_build_dir}/clustering
+mmseqs createdb ${pdb70_dir}/pdb100.fas ${pdb70_dir}/pdb100
+mmseqs cluster ${pdb70_dir}/pdb100 ${pdb70_build_dir}/pdb70_clu ${pdb70_build_dir}/clustering -c 0.9 --min-seq-id 0.7
+mmseqs createtsv ${pdb70_dir}/pdb100 ${pdb70_dir}/pdb100 ${pdb70_build_dir}/pdb70_clu ${pdb70_dir}/pdb70_clu.tsv
+
+echo "pdb70_prepare_input: Running pdbfilter to select for each cluster the structure with the best resolution, R-free and completness ..."
+python3 ${HHSCRIPTS}/pdbfilter.py ${pdb70_dir}/pdb100.fas ${pdb70_dir}/pdb70_clu.tsv ${pdb70_dir}/pdb_filter.dat  ${pdb70_dir}/pdb70.fas -i ${pdb70_scripts}/pdb70_to_include.dat -r ${pdb70_scripts}/pdb70_to_remove.dat -v
+
+echo "pdb70_prepare_input: Converting fasta file to ffdata, ffindex."
+rm -f ${pdb70_dir}/pdb70_fasta.ff{data,index}
+ffindex_from_fasta -s ${pdb70_dir}/pdb70_fasta.ff{data,index} ${pdb70_dir}/pdb70.fas
 
 ln -s ${pdb70_dir}/pdb70_fasta.ffdata ${pdb70_build_dir}/selected_pdb70_fasta.ffdata
 
