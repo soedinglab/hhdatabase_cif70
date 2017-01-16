@@ -13,13 +13,10 @@
 #BSUB -m hh
 #BSUB -w "done(cif70_hhblits)"
 
-source paths.sh
-source $HOME/.bashrc
 source /etc/profile
+source $HOME/.bashrc
 
-# we need the following lines to get mpirun to work
-module load intel/compiler/64/15.0/2015.5.223 
-module load openmpi/gcc/64/1.6.4 
+source paths.sh
 
 mkdir -p /local/${USER}
 MYLOCAL=$(mktemp -d --tmpdir=/local/${USER})

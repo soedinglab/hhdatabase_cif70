@@ -13,11 +13,10 @@
 #BSUB -m hh
 #BSUB -w "done(cif70_addss)"
 
-source paths.sh
+source /etc/profile
 source $HOME/.bashrc
 
-module load intel/compiler/64/15.0/2015.3.187
-module load openmpi/intel/64/1.8.5
+source paths.sh
 
 mkdir -p /local/${USER}
 MYLOCAL=$(mktemp -d --tmpdir=/local/${USER})

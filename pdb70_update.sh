@@ -12,7 +12,7 @@ if [ -e ${pdb70_lock_file} ] && kill -0 `cat ${pdb70_lock_file}`; then
 fi
 
 # remove old log files
-rm -f ${HOME}/jobs/pdb70*.log
+rm -f ${HOME}/jobs/cif70*.log
 
 echo "pdb70_update.sh: Creating ${pdb_dir}."
 mkdir -p ${pdb_dir} # create the pdb folder if not exitsts

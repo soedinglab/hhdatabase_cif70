@@ -23,7 +23,7 @@ rm -rf ${pdb70_build_dir}
 mkdir -p ${pdb70_build_dir}
 
 rm -f ${pdb70_dir}/pdb100.fas ${pdb70_dir}/pdb_filter.dat
-python3 ${HHSCRIPTS}/pdb2fasta.py -i ${pdb_dir}/all/ -o ${pdb70_dir}/pdb100.fas -p ${pdb70_dir}/pdb_filter.dat -s ${scop_file} -c 16 
+python3 ${HHSCRIPTS}/cif2fasta.py -i ${pdb_dir}/all/ -o ${pdb70_dir}/pdb100.fas -p ${pdb70_dir}/pdb_filter.dat -s ${scop_file} -c 16 
 
 echo "pdb70_prepare_input: Removing old pdb70.fas ..."
 rm -f ${pdb70_dir}/pdb70.fas ${pdb70_dir}/pdb70_clu.tsv
