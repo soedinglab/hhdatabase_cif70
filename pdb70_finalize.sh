@@ -84,9 +84,10 @@ tar_name=pdb70_from_mmcif_${day}${month}${year}.tgz
 tar -zcvf ${tar_name} md5sum pdb70_{a3m,hhm,cs219}.ff{data,index} pdb70.cs219 pdb70.cs219.sizes pdb70_{a3m_db,hhm_db}.index pdb70_a3m_db pdb70_hhm_db pdb_filter.dat pdb70_clu.tsv
 chmod og+r ${tar_name}
 
-ssh compbiol@login.gwdg.de "rm -f /usr/users/compbiol/www/data/hhsuite/databases/hhsuite_dbs/pdb70_from_mmcif_*.tgz"
+ssh compbiol@login.gwdg.de "mv -f /usr/users/compbiol/www/data/hhsuite/databases/hhsuite_dbs/pdb70_from_mmcif_*.tgz /usr/users/a/soeding"
 scp ${tar_name} compbiol@login.gwdg.de:/usr/users/compbiol
 ssh compbiol@login.gwdg.de "mv /usr/users/compbiol/${tar_name} /usr/users/compbiol/www/data/hhsuite/databases/hhsuite_dbs"
+ssh compbiol@login.gwdg.de "ln -fs /usr/users/compbiol/www/data/hhsuite/databases/hhsuite_dbs/${tar_name} /usr/users/compbiol/current_pdb70_from_mmcif.tgz"
 
 rm -f ${tar_name}
 rm -f ${pdb70_lock_file}
