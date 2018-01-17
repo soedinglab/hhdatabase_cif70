@@ -17,6 +17,9 @@ source paths.sh
 source /etc/profile
 source $HOME/.bashrc
 
+#set +e
+#set +x
+
 ## Copy from build to final directory
 for type in a3m hhm cs219 cs219_old;
 do
@@ -60,7 +63,6 @@ echo "PART 4 of finalize reformat_old_cs219"
 rm -f ${pdb70_dir}/pdb70.cs219 ${pdb70_dir}/pdb70.cs219.sizes
 python3 ./reformat_old_cs219_ffindex.py ${pdb70_dir}/pdb70_cs219_old ${pdb70_dir}/pdb70
 
-
 #delete old indices
 rm -f ${pdb70_dir}/pdb70_{a3m_db,hhm_db,pdb}.index
 awk '{$1=$1".a3m"}1' ${pdb70_dir}/pdb70_a3m.ffindex > ${pdb70_dir}/pdb70_a3m_db.index
@@ -73,21 +75,20 @@ cd ${pdb70_dir}
 ln -sf pdb70_a3m.ffdata pdb70_a3m_db
 ln -sf pdb70_hhm.ffdata pdb70_hhm_db
 
-rm -f pdb70_from_mmcif.tgz md5sum
+#rm -f md5sum
 md5sum pdb70_{a3m,hhm,cs219}.ff{data,index} pdb70.cs219 pdb70.cs219.sizes pdb70_{a3m_db,hhm_db}.index pdb_filter.dat pdb70_clu.tsv > md5sum
 
-month=$(date +"%b")
-day=$(date +"%d")
-year=$(date +"%y")
-tar_name=pdb70_from_mmcif_${day}${month}${year}.tgz
+# date of when the pdb100 was downloaded
+release="$(date -d @$(stat -c '%Y' pdb100.fas) +'%y%m%d')"
+tar_name="pdb70_from_mmcif_${release}.tar.gz"
 
-tar -zcvf ${tar_name} md5sum pdb70_{a3m,hhm,cs219}.ff{data,index} pdb70.cs219 pdb70.cs219.sizes pdb70_{a3m_db,hhm_db}.index pdb70_a3m_db pdb70_hhm_db pdb_filter.dat pdb70_clu.tsv
-chmod og+r ${tar_name}
+tar -I pigz -cvf ${tar_name} md5sum pdb70_{a3m,hhm,cs219}.ff{data,index} pdb70.cs219 pdb70.cs219.sizes pdb70_{a3m_db,hhm_db}.index pdb70_a3m_db pdb70_hhm_db pdb_filter.dat pdb70_clu.tsv
+chmod a+r ${tar_name}
 
-ssh compbiol@login.gwdg.de "mv -f /usr/users/compbiol/www/data/hhsuite/databases/hhsuite_dbs/pdb70_from_mmcif_*.tgz /usr/users/a/soeding"
-scp ${tar_name} compbiol@login.gwdg.de:/usr/users/compbiol
-ssh compbiol@login.gwdg.de "mv /usr/users/compbiol/${tar_name} /usr/users/compbiol/www/data/hhsuite/databases/hhsuite_dbs"
-ssh compbiol@login.gwdg.de "ln -fs /usr/users/compbiol/www/data/hhsuite/databases/hhsuite_dbs/${tar_name} /usr/users/compbiol/current_pdb70_from_mmcif.tgz"
+scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ${tar_name} compbiol@login.gwdg.de:/usr/users/compbiol
+ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no compbiol@login.gwdg.de "mv /usr/users/compbiol/${tar_name} /usr/users/compbiol/www/data/hhsuite/databases/hhsuite_dbs"
+ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no compbiol@login.gwdg.de "ln -sf /usr/users/compbiol/www/data/hhsuite/databases/hhsuite_dbs/${tar_name} /usr/users/compbiol/www/data/hhsuite/databases/hhsuite_dbs/pdb70_from_mmcif_latest.tar.gz"
+ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no compbiol@login.gwdg.de "find /usr/users/compbiol/www/data/hhsuite/databases/hhsuite_dbs/ -maxdepth 1 -type f -mtime +42 -name 'pdb70_from_mmcif_*' -execdir mv {} /usr/users/a/compbiol \;"
 
 rm -f ${tar_name}
 rm -f ${pdb70_lock_file}
