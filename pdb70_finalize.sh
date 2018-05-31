@@ -38,6 +38,16 @@ do
   mv -f ${pdb70_dir}/pdb70_${type}_opt.ffindex ${pdb70_dir}/pdb70_${type}.ffindex
 done
 
+# remove entries that do not exist in the a3m database anymore in the other databases
+for type in hhm cs219 cs219_old; do 
+  LC_ALL=C comm -13 <(cut -f1 "${pdb70_dir}/pdb70_a3m.ffindex") <(cut -f1 "${pdb70_dir}/pdb70_${type}.ffindex") > "${pdb70_build_dir}/removed_entries.dat"
+  if [ -s "${pdb70_build_dir}/removed_entries.dat" ]; then
+    echo "! Running ffindex_modify -u -f ${pdb70_build_dir}/removed_entries.dat ${pdb70_dir}/pdb70_${type}.ffindex"
+    ffindex_modify -u -f "${pdb70_build_dir}/removed_entries.dat" "${pdb70_dir}/pdb70_${type}.ffindex"
+  fi
+done
+rm -f "${pdb70_build_dir}/removed_entries.dat"
+
 echo "PART 2 of finalize"
 
 ##sort hhms and a3m according to sequence length
