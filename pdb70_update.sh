@@ -6,6 +6,8 @@ source /etc/profile
 source ./paths.sh
 source ~/.bashrc
 
+set -e
+
 export pdb70_lock_file=${pdb70_dir}/lock_pdb70.txt
 
 if [ -e ${pdb70_lock_file} ] && kill -0 `cat ${pdb70_lock_file}`; then
