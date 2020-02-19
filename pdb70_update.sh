@@ -23,8 +23,7 @@ mkdir -p ${pdb_dir} # create the pdb folder if not exitsts
 
 # sync folders, for testing purposes only some folders of the PDB
 echo "pdb70_update.sh: Syncing folders ..."
-rsync --progress -rlpt -v -z --port=33444 rsync.wwpdb.org::ftp/data/structures/divided/mmCIF/ ${pdb_dir}
-rsync --progress -rlpt -v -z --port=33444 rsync.wwpdb.org::ftp/data/structures/obsolete/mmCIF/ ${pdb_dir}/obsolete
+rsync --progress -rlpt -v -z --delete --port=33444 rsync.wwpdb.org::ftp/data/structures/divided/mmCIF/ ${pdb_dir}
 
 LOG_DIR=/usr/users/jsoedin/jobs
 JOB_ID=$(sbatch -p hh -t 2-0 -n 1  -N 1 --parsable -o "${LOG_DIR}/cif70_unfold_cif.log" ./pdb70_unfold_pdb.sh)
