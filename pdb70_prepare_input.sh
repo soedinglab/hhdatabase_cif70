@@ -1,17 +1,4 @@
 #!/bin/bash
-
-#BSUB -q mpi
-#BSUB -W 47:50
-#BSUB -n 16
-#BSUB -a openmp
-#BSUB -o /usr/users/jsoedin/jobs/cif70_prepare_input.log
-#BSUB -R "span[hosts=1]"
-#BSUB -R haswell
-#BSUB -m hh
-#BSUB -R cbscratch
-#BSUB -J cif70_prepare_input
-#BSUB -w "done(cif70_unfold_cif)"
-
 source ./paths.sh
 source ~/.bashrc
 
@@ -27,6 +14,8 @@ python3 ${HHSCRIPTS}/cif2fasta.py -i ${pdb_dir}/all/ -o ${pdb70_dir}/pdb100.fas 
 
 echo "pdb70_prepare_input: Removing old pdb70.fas ..."
 rm -f ${pdb70_dir}/pdb70.fas ${pdb70_dir}/pdb70_clu.tsv
+rm -rf "${pdb70_build_dir}/clustering"
+mmseqs rmdb ${pdb70_build_dir}/pdb70_clu
 
 echo "pdb70_prepare_input: Starting mmseqs to cluster sequences from pdb100.fas (-c 0.9 --min-seq-id 0.7) ..."
 mkdir -p ${pdb70_build_dir}/clustering

@@ -1,18 +1,4 @@
 #!/bin/bash
-
-#BSUB -q mpi
-#BSUB -W 47:50
-#BSUB -n 16
-#BSUB -a openmp
-#BSUB -o /usr/users/jsoedin/jobs/cif70_addss.log
-#BSUB -R "span[hosts=1]"
-#BSUB -R np16
-#BSUB -R haswell
-#BSUB -R cbscratch
-#BSUB -J cif70_addss
-#BSUB -m hh
-#BSUB -w "done(cif70_hhblits)"
-
 source /etc/profile
 source $HOME/.bashrc
 

@@ -1,18 +1,4 @@
 #!/bin/bash
-
-#BSUB -q mpi
-#BSUB -W 47:50
-#BSUB -n 16
-#BSUB -a openmp
-#BSUB -o /usr/users/jsoedin/jobs/cif70_cstranslate_old.log
-#BSUB -R "span[hosts=1]"
-#BSUB -R np16
-#BSUB -R haswell
-#BSUB -R cbscratch
-#BSUB -J cif70_cstranslate_old
-#BSUB -m hh
-#BSUB -w "done(cif70_hhblits)"
-
 source paths.sh
 source $HOME/.bashrc
 
