@@ -8,3 +8,4 @@ export pdb70_build_dir=/cbscratch/${USER}/hhpred_cif_build
 export pdb_dir=/cbscratch/${USER}/databases/pdb/mmcif
 export scop_file=/cbscratch/${USER}/databases/scop/dir.cla.scop.txt_1.75
 export uniprot=/cbscratch/${USER}/databases/uniprot20_2016_02/uniprot20_2016_02
+export EXTRA_CLUSTER_ARGS="-C haswell"
