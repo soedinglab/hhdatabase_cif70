@@ -34,7 +34,7 @@ HH_JOB_ID=$(sbatch -p hh -t 2-0 -n 1  -N 1 $EXTRA_CLUSTER_ARGS --parsable -o "${
 #depends on hhblits
 SS_JOB_ID=$(sbatch -p hh -t 2-0 -n 16 -N 1 $EXTRA_CLUSTER_ARGS --parsable -o "${LOG_DIR}/cif70_addss.log" -d "afterok:$HH_JOB_ID" ./pdb70_addss.sh)
 CS_JOB_ID=$(sbatch -p hh -t 2-0 -n 16 -N 1 $EXTRA_CLUSTER_ARGS --parsable -o "${LOG_DIR}/cif70_cstranslate.log" -d "afterok:$HH_JOB_ID" ./pdb70_cstranslate.sh)
-#CO_JOB_ID=$(sbatch -p hh -t 2-0 -n 16 -N 1 --parsable -o "${LOG_DIR}/cif70_cstranslate_old.log" -d "afterok:$HH_JOB_ID" ./pdb70_cstranslate_old.sh)
+#CO_JOB_ID=$(sbatch -p hh -t 2-0 -n 16 -N 1 $EXTRA_CLUSTER_ARGS --parsable -o "${LOG_DIR}/cif70_cstranslate_old.log" -d "afterok:$HH_JOB_ID" ./pdb70_cstranslate_old.sh)
 
 #depends on addss
 HM_JOB_ID=$(sbatch -p hh -t 2-0 -n 16 -N 1 $EXTRA_CLUSTER_ARGS --parsable -o "${LOG_DIR}/cif70_hhmake.log" -d "afterok:$SS_JOB_ID" ./pdb70_hhmake.sh)
