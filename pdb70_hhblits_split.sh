@@ -2,12 +2,11 @@
 source paths.sh
 source ~/.bashrc
 
-NCORES=16
-
 set -e
 
-mkdir -p /local/${USER}/
-MYLOCAL=$(mktemp -d --tmpdir=/local/${USER})
+mkdir -p "${LOCAL}/${USER}"
+MYLOCAL=$(mktemp -d --tmpdir=${LOCAL}/${USER})
+trap "if [ -d \"${MYLOCAL}\" ] && [ \"${MYLOCAL}\" != \"/\" ]; then rm -rf -- \"${MYLOCAL}\"; fi" EXIT
 
 # copy database to local ssd
 db=${uniprot}
@@ -24,6 +23,6 @@ INPUT=${MYLOCAL}/selected_pdb70_fasta.sel
 rm -f ${pdb70_build_dir}/pdb70_a3m_without_ss.ff{data,index}*
 rm -f ${pdb70_build_dir}/pdb70_a3m_without_ss${SLURM_ARRAY_TASK_ID}.ff{data,index}*
 
-hhblits_omp -i ${INPUT} -oa3m ${MYLOCAL}/pdb70_a3m_without_ss_${SLURM_ARRAY_TASK_ID} -d ${DB} -o /dev/null -cpu ${NCORES} -v 0 -n 3
+hhblits_omp -i ${INPUT} -oa3m ${MYLOCAL}/pdb70_a3m_without_ss_${SLURM_ARRAY_TASK_ID} -d ${DB} -cpu ${NCORES} -v 0 -n 3 -o /dev/null
 cp ${MYLOCAL}/pdb70_a3m_without_ss_${SLURM_ARRAY_TASK_ID}.ff* ${pdb70_build_dir}
 
